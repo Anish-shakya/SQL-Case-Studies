@@ -92,3 +92,26 @@ JOIN menu m
 ON c.product_id = m.product_id
 WHERE ranks = 1
 ```
+
+
+7. Which item was purchased just before the customer became a member?
+```sql 
+SELECT m.customer_id, mi.product_name
+FROM members m
+	JOIN sales s ON m.customer_id = s.customer_id
+	JOIN menu mi ON s.product_id = mi.product_id
+WHERE s.order_date < m.join_date
+GROUP BY m.customer_id, mi.product_name
+ORDER BY m.customer_id;
+```
+8. What is the total items and amount spent for each member before they became a member?
+```sql
+SELECT mi.product_name,COUNT(*) AS total_items,
+SUM(mi.price) AS total_amount
+FROM members m
+	JOIN sales s ON m.customer_id = s.customer_id
+	JOIN menu mi ON s.product_id = mi.product_id
+WHERE s.order_date < m.join_date
+GROUP BY 1
+ORDER BY mi.product_name DESC
+```
