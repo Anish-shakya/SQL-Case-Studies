@@ -65,6 +65,14 @@ ON c.product_id = m.product_id
 WHERE ranks = 1
 
 -- Which item was purchased just before the customer became a member?
+SELECT m.customer_id, mi.product_name
+FROM members m
+JOIN sales s ON m.customer_id = s.customer_id
+JOIN menu mi ON s.product_id = mi.product_id
+WHERE s.order_date < m.join_date
+GROUP BY m.customer_id, mi.product_name
+ORDER BY m.customer_id;
+
 -- What is the total items and amount spent for each member before they became a member?
 -- If each $1 spent equates to 10 points and sushi has a 2x points multiplier 
 ---- how many points would each customer have?
