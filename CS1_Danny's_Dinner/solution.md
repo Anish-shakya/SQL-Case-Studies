@@ -74,9 +74,7 @@ FROM(
 SELECT customer_id,product_name as popular_product
 FROM CTE
 WHERE ranks = 1
-
 ```
-
 
 6. Which item was purchased first by the customer after they became a member?
 ```sql
