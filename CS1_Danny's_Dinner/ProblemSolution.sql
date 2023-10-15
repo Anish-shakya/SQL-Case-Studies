@@ -83,7 +83,53 @@ GROUP BY 1
 ORDER BY mi.product_name DESC
 -- If each $1 spent equates to 10 points and sushi has a 2x points multiplier 
 ---- how many points would each customer have?
+WITH CTE AS(
+	SELECT s.customer_id,m.product_name,m.price,
+	CASE WHEN m.product_name IN (SELECT DISTINCT(product_name) FROM menu where product_name <> 'sushi') 
+		 THEN price*10 ELSE price*20 END  AS points
+	FROM sales s
+	JOIN menu m ON s.product_id = m.product_id
+	ORDER BY s.customer_id
+)
+SELECT customer_id , SUM(points) AS total_points
+FROM CTE
+GROUP BY customer_id
+ORDER BY customer_id
 
+---- solution without cte
+SELECT s.customer_id,
+	SUM(CASE WHEN m.product_name IN (
+			SELECT DISTINCT(product_name) 
+			FROM menu where product_name <> 'sushi') 
+		 THEN price*10 ELSE price*20 END) AS total_points
+	FROM sales s
+	JOIN menu m ON s.product_id = m.product_id
+	GROUP BY 1
+	ORDER BY s.customer_id
+	
 -- In the first week after a customer joins the program (including their join date) 
 ----they earn 2x points on all items, not just sushi - how many points do customer A and B 
 -----have at the end of January?
+----- Using CTE
+WITH CTE AS(
+	SELECT s.customer_id,mi.price,
+	CASE WHEN mi.product_name IN (SELECT DISTINCT(product_name) FROM menu) THEN price * 20 END AS points
+	FROM sales s
+		JOIN members m ON s.customer_id = m.customer_id
+		JOIN menu mi ON mi.product_id = s.product_id
+	WHERE s.order_date >= m.join_date AND s.order_date <= '2021-01-31'
+	)
+SELECT customer_id,SUM(points) AS total_points
+FROM CTE
+GROUP BY customer_id
+ORDER BY customer_id
+
+--- without CTE
+SELECT s.customer_id,
+	SUM(CASE WHEN mi.product_name IN (SELECT DISTINCT(product_name) FROM menu) THEN price * 20 END) AS total_points
+	FROM sales s
+		JOIN members m ON s.customer_id = m.customer_id
+		JOIN menu mi ON mi.product_id = s.product_id
+	WHERE s.order_date >= m.join_date AND s.order_date <= '2021-01-31'
+	GROUP BY s.customer_id
+	ORDER BY s.customer_id
